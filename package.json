@@ -5,8 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src --ext .ts --fix",
-    "dev": "tsx watch src/server.ts"
+    "lint": "eslint . --ext .ts --fix",
+    "dev": "tsx watch src/server.ts",
+    "knex": "node --no-warnings --loader tsx ./node_modules/knex/bin/cli.js",
+    "migrate:create": "npm run knex -- migrate:make --migrations-directory ./db/migrations -x ts",
+    "migrate:latest": "npm run knex -- migrate:latest --knexfile ./knexFile.ts",
+    "migrate:rollback": "npm run knex -- migrate:rollback --knexfile ./knexFile.ts --all"
   },
   "author": "",
   "license": "ISC",
@@ -20,6 +24,9 @@
   "dependencies": {
     "dotenv": "^16.1.4",
     "fastify": "^4.18.0",
+    "knex": "^2.4.2",
+    "pg": "^8.11.0",
+    "sqlite3": "^5.1.6",
     "zod": "^3.21.4"
   }
 }
