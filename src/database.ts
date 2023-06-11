@@ -5,7 +5,7 @@ import path from 'path'
 export const config: Knex.Config = {
   client: env.DATABASE_CLIENT,
   connection:
-    env.NODE_ENV === 'test'
+    env.NODE_ENV === 'development'
       ? {
           filename: path.join(__dirname, env.DATABASE_URL),
         }
