@@ -12,6 +12,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production']).default('production'),
   DATABASE_URL: z.string(),
   DATABASE_CLIENT: z.enum(['sqlite', 'pg']),
+  SECRET: z.string(),
 })
 
 const _env = envSchema.safeParse(process.env)
