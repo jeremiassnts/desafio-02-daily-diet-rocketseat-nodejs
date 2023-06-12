@@ -19,6 +19,7 @@ export const checkUserToken = async function (req: FastifyRequest) {
     if (!data) throw new Error()
     const user = await knex('users').where('id', data.id).first()
     if (!user) throw new Error()
+    req.headers.user = user
   } catch (err) {
     throw new Error('Invalid token')
   }
