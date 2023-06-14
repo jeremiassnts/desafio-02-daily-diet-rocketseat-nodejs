@@ -1,6 +1,12 @@
 import { FastifyInstance } from 'fastify'
 import { checkUserToken } from '../middlewares/check-user-token'
-import { createMeal, deleteMeal, editMeal, getMeals } from '../controllers/meals'
+import {
+  createMeal,
+  deleteMeal,
+  editMeal,
+  getMeal,
+  getMeals,
+} from '../controllers/meals'
 
 export const mealsRoutes = async function (app: FastifyInstance) {
   // create meal
@@ -17,6 +23,15 @@ export const mealsRoutes = async function (app: FastifyInstance) {
     try {
       const meals = await getMeals(req)
       return res.status(200).send({ meals })
+    } catch (err) {
+      return res.status(400).send(err)
+    }
+  })
+  // get user meal
+  app.get('/:id', { preHandler: [checkUserToken] }, async (req, res) => {
+    try {
+      const meal = await getMeal(req)
+      return res.status(200).send({ meal })
     } catch (err) {
       return res.status(400).send(err)
     }

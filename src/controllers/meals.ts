@@ -45,6 +45,22 @@ export const getMeals = async function (req: FastifyRequest) {
   }))
 }
 
+export const getMeal = async function (req: FastifyRequest) {
+  const getMealParamsSchema = z.object({
+    id: z.string().uuid(),
+  })
+  const { id: mealId } = getMealParamsSchema.parse(req.params)
+  if (!mealId) {
+    throw new Error('Meal id not sent')
+  }
+  const meal = await knex('meals').where('id', mealId).first()
+  if (!meal) {
+    throw new Error('Meal id is not valid')
+  }
+
+  return meal
+}
+
 export const editMeal = async function (req: FastifyRequest) {
   const editMealParamsSchema = z.object({
     id: z.string().uuid(),
@@ -98,8 +114,8 @@ export const deleteMeal = async function (req: FastifyRequest) {
   if (!mealId) {
     throw new Error('Meal id not sent')
   }
-  const oldMeal = await knex('meals').where('id', mealId).first()
-  if (!oldMeal) {
+  const meal = await knex('meals').where('id', mealId).first()
+  if (!meal) {
     throw new Error('Meal id is not valid')
   }
 
