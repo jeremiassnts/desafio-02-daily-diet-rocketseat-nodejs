@@ -1,27 +1,26 @@
 import { FastifyRequest } from 'fastify'
 import { z } from 'zod'
 import { knex } from '../database'
-import crypto from 'crypto'
 import dayjs from 'dayjs'
+import crypto from 'crypto'
 
 const userSchema = z.object({
-  id: z.string()
+  id: z.string(),
 })
 
 export const createMeal = async function (req: FastifyRequest) {
-  const mealSchema = z.object({
+  const requestMealSchema = z.object({
     name: z.string(),
     description: z.string(),
     inDiet: z.boolean(),
-    date: z.string()
+    date: z.string(),
   })
-
-  const { name, description, inDiet, date } = mealSchema.parse(req.body)
+  const { name, description, inDiet, date } = requestMealSchema.parse(req.body)
   const user = userSchema.parse(req.headers.user)
 
   const parsedDate = dayjs(date)
-  if(!parsedDate.isValid()){
-    throw new Error("Date meal is not valid")
+  if (!parsedDate.isValid()) {
+    throw new Error('Date meal is not valid')
   }
   await knex('meals').insert({
     id: crypto.randomUUID(),
@@ -40,5 +39,53 @@ export const getMeals = async function (req: FastifyRequest) {
   const meals = await knex('meals')
     .where('user_id', user.id)
     .andWhere('deleted', null)
-  return meals
+  return meals.map((e) => ({
+    ...e,
+    inDiet: e.inDiet === 1,
+  }))
+}
+
+export const editMeal = async function (req: FastifyRequest) {
+  const editMealParamsSchema = z.object({
+    id: z.string().uuid(),
+  })
+  const databaseMealSchema = z.object({
+    name: z.string(),
+    description: z.string(),
+    inDiet: z.number(),
+    date: z.string(),
+  })
+  const requestMealSchema = z.object({
+    name: z.string().optional(),
+    description: z.string().optional(),
+    inDiet: z.boolean().optional(),
+    date: z.string().optional(),
+  })
+
+  const { id: mealId } = editMealParamsSchema.parse(req.params)
+  if (!mealId) {
+    throw new Error('Meal id not sent')
+  }
+  const oldMeal = databaseMealSchema.parse(
+    await knex('meals').where('id', mealId).first(),
+  )
+  if (!oldMeal) {
+    throw new Error('Meal id is not valid')
+  }
+
+  const newMeal = requestMealSchema.parse(req.body)
+
+  await knex('meals')
+    .where('id', mealId)
+    .update({
+      name: newMeal.name ? newMeal.name : oldMeal.name,
+      description: newMeal.description
+        ? newMeal.description
+        : oldMeal.description,
+      date: newMeal.date ? newMeal.date : oldMeal.date,
+      inDiet:
+        newMeal.inDiet !== null && newMeal.inDiet !== undefined
+          ? newMeal.inDiet
+          : oldMeal.inDiet === 1,
+    })
 }
