@@ -89,3 +89,21 @@ export const editMeal = async function (req: FastifyRequest) {
           : oldMeal.inDiet === 1,
     })
 }
+
+export const deleteMeal = async function (req: FastifyRequest) {
+  const deleteMealParamsSchema = z.object({
+    id: z.string().uuid(),
+  })
+  const { id: mealId } = deleteMealParamsSchema.parse(req.params)
+  if (!mealId) {
+    throw new Error('Meal id not sent')
+  }
+  const oldMeal = await knex('meals').where('id', mealId).first()
+  if (!oldMeal) {
+    throw new Error('Meal id is not valid')
+  }
+
+  await knex('meals').where('id', mealId).update({
+    deleted: dayjs().format(),
+  })
+}
