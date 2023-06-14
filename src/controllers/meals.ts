@@ -53,7 +53,12 @@ export const getMeal = async function (req: FastifyRequest) {
   if (!mealId) {
     throw new Error('Meal id not sent')
   }
-  const meal = await knex('meals').where('id', mealId).first()
+
+  const { id: userId } = userSchema.parse(req.headers.user)
+  const meal = await knex('meals')
+    .where('id', mealId)
+    .andWhere('user_id', userId)
+    .first()
   if (!meal) {
     throw new Error('Meal id is not valid')
   }
@@ -82,8 +87,10 @@ export const editMeal = async function (req: FastifyRequest) {
   if (!mealId) {
     throw new Error('Meal id not sent')
   }
+
+  const { id: userId } = userSchema.parse(req.headers.user)
   const oldMeal = databaseMealSchema.parse(
-    await knex('meals').where('id', mealId).first(),
+    await knex('meals').where('id', mealId).andWhere('user_id', userId).first(),
   )
   if (!oldMeal) {
     throw new Error('Meal id is not valid')
@@ -114,7 +121,12 @@ export const deleteMeal = async function (req: FastifyRequest) {
   if (!mealId) {
     throw new Error('Meal id not sent')
   }
-  const meal = await knex('meals').where('id', mealId).first()
+
+  const { id: userId } = userSchema.parse(req.headers.user)
+  const meal = await knex('meals')
+    .where('id', mealId)
+    .andWhere('user_id', userId)
+    .first()
   if (!meal) {
     throw new Error('Meal id is not valid')
   }
