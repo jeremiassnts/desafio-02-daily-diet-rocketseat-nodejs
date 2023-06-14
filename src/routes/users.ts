@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify'
-import { createUser, token as getToken } from '../controllers/users'
+import { createUser, token as getToken, getUserMetrics } from '../controllers/users'
+import { checkUserToken } from '../middlewares/check-user-token'
 
 export async function usersRoutes(app: FastifyInstance) {
   // create user
@@ -22,5 +23,14 @@ export async function usersRoutes(app: FastifyInstance) {
     return res.status(200).send({
       token,
     })
+  })
+  // get user metrics
+  app.get('/metrics', { preHandler: [checkUserToken] }, async (req, res) => {
+    try {
+   const metrics=   await getUserMetrics(req)
+      return res.status(200).send(metrics)
+    } catch (err) {
+      return res.status(400).send(err)
+    }
   })
 }

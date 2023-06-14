@@ -56,3 +56,24 @@ export async function token(req: FastifyRequest) {
   })
   return token
 }
+export async function getUserMetrics(req: FastifyRequest) {
+  const userSchema = z.object({
+    id: z.string(),
+  })
+  const user = userSchema.parse(req.headers.user)
+
+  const meals = await knex('meals').where('user_id', user.id).andWhere('deleted', null).orderBy('date')
+
+  let best_sequence = 0
+  for (let i = 0; i < meals.length; i++) {
+    if (meals[i].inDiet) best_sequence++
+    else best_sequence = 0
+  }
+
+  return {
+    meals_total: meals.length,
+    meals_in_diet_total: meals.filter(e => e.inDiet).length,
+    meals_not_in_diet_total: meals.filter(e => !e.inDiet).length,
+    best_sequence
+  }
+}
